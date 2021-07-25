@@ -1,0 +1,24 @@
+spring:
+  profiles:
+    group:
+      "dev": "beta"
+      "test": "local"
+    active: "test"
+
+---
+spring:
+  config:
+    activate:
+      on-profile: local
+  elasticsearch:
+    host: localhost
+    port: 9200
+
+---
+spring:
+  config:
+    activate:
+      on-profile: beta
+  elasticsearch:
+    host: localhost
+    port: 9200
