@@ -18,7 +18,7 @@ public class RestHighLevelClientConfig {
     public RestHighLevelClient restHighLevelClient(ElasticsearchConfiguration configuration) {
         List<HttpHost> httpHosts = new ArrayList<>();
         httpHosts.add(new HttpHost(configuration.getHost(), configuration.getPort()));
-        return new RestHighLevelClient(RestClient.builder(httpHosts.toArray(new HttpHost[0])));
+        return new RestHighLevelClient(RestClient.builder(httpHosts.toArray(new HttpHost[0])).setCompressionEnabled(true));
     }
 
 }

@@ -5,7 +5,6 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.wedul.estest.domain.student.dto.StudentDto;
 import com.wedul.estest.domain.student.querybuilder.StudentQueryBuilder;
 import lombok.RequiredArgsConstructor;
-import org.apache.http.HttpEntity;
 import org.elasticsearch.action.bulk.BulkResponse;
 import org.elasticsearch.action.search.SearchResponse;
 import org.elasticsearch.client.Request;
@@ -29,7 +28,11 @@ public class StudentService {
     private final ObjectMapper objectMapper;
 
     public List<StudentDto> getStudent() throws IOException {
-        SearchResponse searchResponse = restHighLevelClient.search(studentQueryBuilder.getStudentList(), RequestOptions.DEFAULT);
+        RequestOptions.Builder builder = RequestOptions.DEFAULT.toBuilder();
+        builder.addHeader("Accept-Encoding'", "gzip");
+        builder.addHeader("Content-Encoding", "gzip");
+
+        SearchResponse searchResponse = restHighLevelClient.search(studentQueryBuilder.getStudentList(), builder.build());
         return Arrays.stream(searchResponse.getHits().getHits())
             .map(document -> {
                 try {
@@ -41,14 +44,36 @@ public class StudentService {
             .collect(Collectors.toList());
     }
 
+    public List<StudentDto> getStudentUseLowLevelClient() throws IOException {
+        Request request = new Request("POST", "_search");
+
+        RequestOptions.Builder builder = RequestOptions.DEFAULT.toBuilder();
+        builder.addHeader("Accept-Encoding'", "gzip");
+        builder.addHeader("Content-Encoding", "gzip");
+
+        request.setOptions(builder);
+
+        Response response = restHighLevelClient.getLowLevelClient().performRequest(request);
+
+        return null;
+    }
+
     public BulkResponse updateStudent(List<StudentDto> studentDtos) throws IOException {
-         return restHighLevelClient.bulk(studentQueryBuilder.updateStudents(studentDtos), RequestOptions.DEFAULT);
+        RequestOptions.Builder builder = RequestOptions.DEFAULT.toBuilder();
+        builder.addHeader("Accept-Encoding'", "gzip");
+        builder.addHeader("Content-Encoding", "gzip");
+
+        return restHighLevelClient.bulk(studentQueryBuilder.updateStudents(studentDtos), builder.build());
     }
 
     public Response updateStudentUseLowLevelClient(List<StudentDto> studentDtos) throws IOException {
         Request request = new Request("POST", "_bulk");
 
         request.addParameter("filter_path", "items.*.error");
+        RequestOptions.Builder builder = RequestOptions.DEFAULT.toBuilder();
+        builder.addHeader("Accept-Encoding'", "gzip");
+        builder.addHeader("Content-Encoding", "gzip");
+        request.setOptions(builder);
         request.setJsonEntity(studentQueryBuilder.updateStudentJson(studentDtos));
 
         return restHighLevelClient.getLowLevelClient().performRequest(request);

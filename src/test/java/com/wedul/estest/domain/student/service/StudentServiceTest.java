@@ -1,6 +1,9 @@
 package com.wedul.estest.domain.student.service;
 
 import com.wedul.estest.domain.student.dto.StudentDto;
+import org.apache.http.HttpHeaders;
+import org.apache.http.client.entity.GzipDecompressingEntity;
+import org.apache.http.util.EntityUtils;
 import org.elasticsearch.action.bulk.BulkResponse;
 import org.elasticsearch.client.Response;
 import org.junit.jupiter.api.DisplayName;
@@ -16,9 +19,14 @@ import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.instanceOf;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+
 @SpringBootTest
 class StudentServiceTest {
 
+    private static final String GZIP_ENCODING = "gzip";
     @Autowired
     private StudentService studentService;
 
@@ -71,6 +79,14 @@ class StudentServiceTest {
         Stream<String> streamOfString= new BufferedReader(reader).lines();
         String streamToString = streamOfString.collect(Collectors.joining());
         System.out.println(streamToString);
+
+        // gzip 확인
+        assertEquals(200, response.getStatusLine().getStatusCode());
+        assertEquals(GZIP_ENCODING, response.getHeader(HttpHeaders.CONTENT_ENCODING));
+        assertThat(response.getEntity(), instanceOf(GzipDecompressingEntity.class));
+
+        String body = EntityUtils.toString(response.getEntity());
+        System.out.println(body);
     }
 
 }
